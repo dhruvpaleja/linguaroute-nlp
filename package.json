@@ -1,0 +1,1 @@
+{"name":"linguaroute","version":"1.0.0","private":true,"type":"module","description":"Browser-local language routing and multilingual sentence mapping","scripts":{"test":"node --test tests/*.test.mjs","build":"node scripts/build.mjs","start":"node scripts/serve.mjs"},"engines":{"node":">=22"}}

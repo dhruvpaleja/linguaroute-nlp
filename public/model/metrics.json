@@ -1,0 +1,79 @@
+{
+  "dataset": "WiLI-2018 (18-language subset)",
+  "source": "https://doi.org/10.5281/zenodo.841984",
+  "languages": {
+    "eng": "English",
+    "fra": "French",
+    "deu": "German",
+    "spa": "Spanish",
+    "por": "Portuguese",
+    "ita": "Italian",
+    "nld": "Dutch",
+    "swe": "Swedish",
+    "dan": "Danish",
+    "fin": "Finnish",
+    "pol": "Polish",
+    "tur": "Turkish",
+    "ind": "Indonesian",
+    "vie": "Vietnamese",
+    "hin": "Hindi",
+    "mar": "Marathi",
+    "ben": "Bengali",
+    "ara": "Arabic"
+  },
+  "features": 40000,
+  "seed": 42,
+  "selected_c": 2.0,
+  "split": {
+    "official_train_subset": 9000,
+    "train_used": 8975,
+    "official_test_subset": 9000,
+    "train_test_normalized_overlaps_removed": 23,
+    "train_duplicates_removed": 2,
+    "conflicting_train_duplicate_keys": 0,
+    "test_duplicate_keys": 18,
+    "near_duplicate_audit": "Not performed; article/topic overlap may remain.",
+    "fit": 7180,
+    "validation": 1795
+  },
+  "validation_candidates": [
+    {
+      "C": 0.5,
+      "macro_f1": 0.9905769002906908
+    },
+    {
+      "C": 1.0,
+      "macro_f1": 0.9916666688834196
+    },
+    {
+      "C": 2.0,
+      "macro_f1": 0.9927806138195852
+    }
+  ],
+  "validation_macro_f1": 0.9927806138195852,
+  "validation_score_margin_accepted_accuracy": 0.9966216216216216,
+  "test": {
+    "accuracy": 0.988,
+    "macro_f1": 0.9881319737690978
+  },
+  "baseline": {
+    "accuracy": 0.9754444444444444,
+    "macro_f1": 0.976465961411734
+  },
+  "baseline_name": "Character TF-IDF + Multinomial Naive Bayes (alpha 0.1)",
+  "review_policy": {
+    "score_floor": -0.25,
+    "margin_floor": 0.25,
+    "min_letters": 30,
+    "min_feature_coverage": 0.08
+  },
+  "selective_test": {
+    "accepted": 8910,
+    "review": 90,
+    "coverage": 0.99,
+    "accepted_accuracy": 0.9933782267115601
+  },
+  "runtime_seconds": 74.93,
+  "limitations": "Wikipedia paragraphs, 18 known languages only. Sentence map is exploratory; no code-switch benchmark or unknown-language detection guarantee.",
+  "archive_md5": "3dc5bd41587811ad6b0d04ae2f235f84"
+}
