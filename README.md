@@ -1,5 +1,7 @@
 # LinguaRoute
 
+[Live app](https://linguaroute-dhruv.vercel.app/) · [GitHub](https://github.com/dhruvpaleja/linguaroute-nlp) · [Report (PDF)](docs/LinguaRoute_Mini_Project_Report.pdf) · [Presentation (PPTX)](docs/LinguaRoute_Presentation.pptx) · [Notebook](LinguaRoute.ipynb)
+
 A browser-local NLP workspace for routing multilingual written content to a suitable language desk.
 
 **Course:** Natural Language Processing (702AI0C009)  

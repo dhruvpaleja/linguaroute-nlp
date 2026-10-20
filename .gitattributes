@@ -1,0 +1,19 @@
+# Keep binary artifacts byte-for-byte; never apply line-ending conversion.
+* text=auto
+*.pdf binary
+*.pptx binary
+*.docx binary
+*.xlsx binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.f32 binary
+*.onnx binary
+*.bin binary
+*.npy binary
+*.npz binary
+*.pkl binary
+*.joblib binary
+*.safetensors binary

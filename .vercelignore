@@ -1,0 +1,20 @@
+# Raw corpus, notebooks and submission files stay in GitHub, not deployment.
+/.git/
+/.vercel/
+/dist/
+/node_modules/
+/data/
+/evaluation/
+/docs/
+/notebooks/
+/tests/
+**/__pycache__/
+*.ipynb
+*.py
+*.pyc
+requirements*.txt
+/README.md
+/DATA_SOURCES.md
+/scripts/*
+!/scripts/build.mjs
+# public/ (including model metadata and weights), package files and vercel.json stay.
