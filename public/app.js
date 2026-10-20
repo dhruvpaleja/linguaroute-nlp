@@ -1,4 +1,4 @@
-import {classify,languageMap,splitSegments,rowsToCSV} from './core.js';
+import {classify,languageMap,classifyBatch,rowsToCSV} from './core.js';
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let model,weights,rows=[];
@@ -13,8 +13,17 @@ const examples=[
 $('examples').innerHTML=examples.map(([name],i)=>`<button type="button" class="sample" data-example="${i}">${name}</button>`).join('');
 $('examples').addEventListener('click',e=>{const b=e.target.closest('[data-example]');if(!b)return;$('input').value=examples[Number(b.dataset.example)][1];counter();if(model)analyse();});
 function counter(){$('counter').textContent=`${$('input').value.length.toLocaleString()} / 12,000`;}
-$('input').addEventListener('input',counter);
-$('clear').addEventListener('click',()=>{$('input').value='';counter();$('error').textContent='';$('sentence-section').hidden=true;$('input').focus();});
+function clearPrediction(){
+  $('prediction').innerHTML='<div class="empty"><span class="empty-icon">↗</span><h3>Ready for the current text.</h3><p>Identify the text again to see a fresh suggestion. Previous results have been cleared.</p></div>';
+  $('sentence-section').hidden=true;$('sentence-map').innerHTML='';$('map-count').textContent='';$('map-warning').textContent='';
+}
+function clearBatch(status=''){
+  rows=[];$('export').disabled=true;$('distribution').innerHTML='';$('batch-table').innerHTML='';$('batch-status').textContent=status;
+}
+$('input').addEventListener('input',()=>{counter();clearPrediction();$('error').textContent='';});
+$('clear').addEventListener('click',()=>{$('input').value='';counter();clearPrediction();$('error').textContent='';$('input').focus();});
+$('batch-input').maxLength=600000;
+$('batch-input').addEventListener('input',()=>clearBatch('Text changed. Route this batch again before exporting.'));
 $('input').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&model)analyse();});
 function render(r){
   $('prediction').innerHTML=`<span class="result-status ${r.reasons.length?'review':''}">${esc(r.status)}</span>
@@ -26,6 +35,7 @@ function render(r){
   <p class="result-foot">Score gap ${r.margin.toFixed(3)} · ${(r.coverage*100).toFixed(1)}% feature coverage · ${r.letters} letters</p>`;
 }
 function analyse(){
+  clearPrediction();
   try{
     $('error').textContent='';
     const text=$('input').value,r=classify(text,model,weights);render(r);
@@ -39,17 +49,16 @@ function analyse(){
 }
 $('analyse').addEventListener('click',analyse);
 $('batch-analyse').addEventListener('click',()=>{
-  const lines=$('batch-input').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  if(!lines.length||lines.length>50){$('batch-status').textContent='Use between 1 and 50 non-empty lines.';return;}
+  clearBatch();
   try{
-    rows=lines.map(text=>({text,result:classify(text,model,weights)}));
+    rows=classifyBatch($('batch-input').value,model,weights);
     const counts={};for(const row of rows){const label=row.result.reasons.length?'Needs review':row.result.language;counts[label]=(counts[label]||0)+1;}
     $('distribution').innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([name,n])=>`<span>${esc(name)} <b>${n}</b></span>`).join('');
     $('batch-table').innerHTML=`<table><thead><tr><th>Message</th><th>Language desk</th><th>Status</th><th>Score gap</th></tr></thead><tbody>${rows.map(({text,result})=>`<tr><td dir="auto">${esc(text)}</td><td>${esc(result.language)}</td><td>${esc(result.status)}</td><td>${result.margin.toFixed(3)}</td></tr>`).join('')}</tbody></table>`;
     $('batch-status').textContent=`${rows.length} messages processed locally`;$('export').disabled=false;
-  }catch(e){$('batch-status').textContent=e.message;}
+  }catch(e){clearBatch(e.message);}
 });
-$('export').addEventListener('click',()=>{if(!rows.length)return;const url=URL.createObjectURL(new Blob([rowsToCSV(rows)],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='linguaroute-language-routing.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+$('export').addEventListener('click',()=>{if(!rows.length||$('export').disabled)return;const url=URL.createObjectURL(new Blob(['\uFEFF',rowsToCSV(rows)],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='linguaroute-language-routing.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 async function load(){
   try{
     const [m,w,p]=await Promise.all([fetch('/model/model.json'),fetch('/model/weights.f32'),fetch('/model/classification-report.json')]);

@@ -8,3 +8,4 @@ data/x_*.txt
 data/y_*.txt
 
 .env*
+.vercel

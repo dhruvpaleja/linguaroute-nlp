@@ -37,6 +37,15 @@ export function splitSegments(text){
 export function languageMap(text,model,weights){
   return splitSegments(text).map((text,i)=>({index:i+1,text,result:classify(text,model,weights)}));
 }
-export function csvCell(value){let s=String(value);if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';}
+export function classifyBatch(text,model,weights){
+  if(typeof text!=='string'||text.length>600000)throw new Error('Use up to 600,000 characters in one batch.');
+  const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length||lines.length>50)throw new Error('Use between 1 and 50 non-empty lines.');
+  return lines.map((text,index)=>{
+    try{return {text,result:classify(text,model,weights)};}
+    catch(error){throw new Error(`Message ${index+1}: ${error.message}`);}
+  });
+}
+export function csvCell(value){let s=String(value);if(/^[\s\uFEFF]*[=+\-@]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';}
 export function rowsToCSV(rows){return ['Text,Language,ISO code,Status,Decision score,Score gap',
   ...rows.map(({text,result})=>[text,result.language,result.code,result.status,result.top[0].score.toFixed(4),result.margin.toFixed(4)].map(csvCell).join(','))].join('\r\n');}

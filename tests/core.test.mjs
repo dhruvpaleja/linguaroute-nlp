@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {normalize,ngrams,classify,languageMap,splitSegments,rowsToCSV} from '../public/core.js';
+import {normalize,ngrams,classify,languageMap,splitSegments,classifyBatch,csvCell,rowsToCSV} from '../public/core.js';
 const model=JSON.parse(await readFile(new URL('../public/model/model.json',import.meta.url)));
 const buffer=await readFile(new URL('../public/model/weights.f32',import.meta.url));
 const weights=new Float32Array(buffer.buffer,buffer.byteOffset,buffer.byteLength/4);
@@ -57,6 +57,19 @@ test('CSV export quotes messages and prevents spreadsheet formula injection',()=
   const csv=rowsToCSV([{text:'=HYPERLINK("bad")',result}]);
   assert.ok(csv.includes('"\'=HYPERLINK(""bad"")"'));
   assert.equal(csv.split('\r\n').length,2);
+});
+test('batch limits reject invalid text before returning partial rows',()=>{
+  assert.throws(()=>classifyBatch('',model,weights),/1 and 50/);
+  assert.throws(()=>classifyBatch('hello\n'.repeat(51),model,weights),/1 and 50/);
+  assert.throws(()=>classifyBatch('a'.repeat(600001),model,weights),/600,000/);
+  assert.throws(()=>classifyBatch('Valid first line\n'+'x'.repeat(12001),model,weights),/Message 2.*12,000/);
+  assert.equal(classifyBatch('\nHello world\n\nBonjour tout le monde\n',model,weights).length,2);
+});
+test('CSV formula protection also covers leading whitespace and preserves embedded quotes',()=>{
+  for(const value of [' =SUM(1,2)','\t+1+1','\r@SUM(1,2)','\uFEFF-2+3']){
+    assert.equal(csvCell(value).startsWith('"\'') ,true);
+  }
+  assert.equal(csvCell('ordinary "quoted" text'),'"ordinary ""quoted"" text"');
 });
 test('selected train and official test have no exact normalized text overlap',async()=>{
   const read=async name=>(await readFile(new URL('../data/'+name,import.meta.url),'utf8')).trim().split('\n').map(JSON.parse);
